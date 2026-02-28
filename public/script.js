@@ -1,103 +1,84 @@
-const API = "http://localhost:3000";
+// Usa automaticamente o domínio atual (funciona local e online)
+const API = window.location.origin;
 
-// DASHBOARD
-if (document.getElementById("ativos")) {
+// ================== CADASTRAR ==================
+async function cadastrar() {
+  const nome = document.getElementById("nome").value;
+  const quarto = document.getElementById("quarto").value;
+  const valor_diaria = document.getElementById("valor_diaria").value;
 
-    fetch(API + "/hospedes")
-        .then(res => res.json())
-        .then(data => {
-            const ativos = data.filter(h => h.status === "hospedado");
-            document.getElementById("ativos").innerText = ativos.length;
+  if (!nome || !quarto || !valor_diaria) {
+    alert("Preencha todos os campos!");
+    return;
+  }
 
-            const agenda = document.getElementById("agenda");
-            agenda.innerHTML = "";
-
-            ativos.forEach(h => {
-                agenda.innerHTML += `<li>Quarto ${h.quarto} - ${h.nome}</li>`;
-            });
-        });
-
-    fetch(API + "/faturamento")
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("faturamento").innerText =
-                "R$ " + Number(data.total).toFixed(2);
-        });
-}
-
-// CADASTRO
-function cadastrar() {
-    const nome = document.getElementById("nome").value;
-    const quarto = document.getElementById("quarto").value;
-    const valor = document.getElementById("valor").value;
-
-    fetch(API + "/cadastrar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            nome,
-            quarto,
-            valor_diaria: valor
-        })
-    }).then(() => location.reload());
-}
-
-// LISTAR NA PÁGINA CADASTRO
-if (document.getElementById("lista")) {
-
-    fetch(API + "/hospedes")
-        .then(res => res.json())
-        .then(data => {
-
-            const lista = document.getElementById("lista");
-            lista.innerHTML = "";
-
-            // 🔹 Mostrar apenas hóspedes ativos
-            const ativos = data.filter(h => h.status === "hospedado");
-
-            ativos.forEach(h => {
-                lista.innerHTML += `
-                <li>
-                    ${h.nome} - Quarto ${h.quarto}
-                    <button onclick="checkout(${h.id})">Check-out</button>
-                </li>`;
-            });
-        });
-}
-
-function checkout(id) {
-    const diarias = prompt("Quantidade de diárias:");
-
-    if (!diarias || diarias <= 0) {
-        alert("Quantidade inválida!");
-        return;
-    }
-
-    fetch(API + "/checkout/" + id, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            quantidade_diarias: diarias
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert("Valor total a pagar: R$ " + Number(data.total).toFixed(2));
-        location.reload();
+  try {
+    const response = await fetch(`${API}/cadastrar`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        nome,
+        quarto,
+        valor_diaria
+      })
     });
+
+    const data = await response.json();
+    alert(data.message);
+
+    window.location.href = "index.html";
+
+  } catch (error) {
+    console.error("Erro ao cadastrar:", error);
+    alert("Erro ao cadastrar!");
+  }
 }
-// limpar faturamento mensal
-function limparFaturamento() {
 
-    const confirmar = confirm("Tem certeza que deseja zerar o faturamento mensal?");
+// ================== LISTAR HÓSPEDES ==================
+async function listarHospedes() {
+  try {
+    const response = await fetch(`${API}/hospedes`);
+    const hospedes = await response.json();
 
-    if (!confirmar) return;
+    const tabela = document.getElementById("tabela");
+    tabela.innerHTML = "";
 
-    fetch(API + "/limpar-faturamento", {
-        method: "POST"
-    })
-    .then(() => {
-        alert("Faturamento mensal zerado com sucesso!");
-        location.reload();
+    hospedes.forEach(hospede => {
+      tabela.innerHTML += `
+        <tr>
+          <td>${hospede.nome}</td>
+          <td>${hospede.quarto}</td>
+          <td>R$ ${hospede.valor_diaria}</td>
+          <td>${hospede.status}</td>
+        </tr>
+      `;
     });
+
+  } catch (error) {
+    console.error("Erro ao buscar hóspedes:", error);
+  }
+}
+
+// ================== CHECKOUT ==================
+async function checkout(id) {
+  try {
+    const response = await fetch(`${API}/checkout/${id}`, {
+      method: "PUT"
+    });
+
+    const data = await response.json();
+    alert(data.message);
+
+    listarHospedes();
+
+  } catch (error) {
+    console.error("Erro no checkout:", error);
+  }
+}
+
+// Carrega hóspedes ao abrir página principal
+if (document.getElementById("tabela")) {
+  listarHospedes();
 }
