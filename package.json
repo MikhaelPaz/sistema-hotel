@@ -1,14 +1,11 @@
 {
-  "name": "sistema-hotel",
+  "name": "hotel-system",
   "version": "1.0.0",
-  "main": "server.js",
+  "description": "Sistema de gerenciamento de hotel desenvolvido com:",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "mysql2": "^3.0.0"
-  }
+  "start": "node server.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
