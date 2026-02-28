@@ -30,11 +30,11 @@ db.connect(err => {
 
 // CADASTRAR
 app.post("/cadastrar", (req, res) => {
-    const { nome, quarto, valor } = req.body;
+    const { nome, quarto, valor_diaria } = req.body;
 
     db.query(
-        "INSERT INTO hospedagens (nome, quarto, valor) VALUES (?, ?, ?)",
-        [nome, quarto, valor],
+        "INSERT INTO hospedagens (nome, quarto, valor_diaria) VALUES (?, ?, ?)",
+        [nome, quarto, valor_diaria],
         (err) => {
             if (err) return res.status(500).send(err);
             res.send("Hóspede cadastrado");
@@ -60,7 +60,7 @@ app.post("/checkout/:id", (req, res) => {
         if (result.length === 0) return res.status(404).send("Hóspede não encontrado");
 
         const hospede = result[0];
-        const total = hospede.valor * quantidade_diarias;
+        const total = hospede.valor_diaria * quantidade_diarias;
 
         db.query(
             `UPDATE hospedagens 
