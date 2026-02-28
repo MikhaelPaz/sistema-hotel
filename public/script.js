@@ -5,9 +5,9 @@ const API = window.location.origin;
 async function cadastrar() {
   const nome = document.getElementById("nome").value;
   const quarto = document.getElementById("quarto").value;
-  const valor = document.getElementById("valor").value;
+  const valor_diaria = document.getElementById("valor_diaria").value;
 
-  if (!nome || !quarto || !valor) {
+  if (!nome || !quarto || !valor_diaria) {
     alert("Preencha todos os campos!");
     return;
   }
@@ -21,7 +21,7 @@ async function cadastrar() {
       body: JSON.stringify({
         nome,
         quarto,
-        valor
+        valor_diaria
       })
     });
 
@@ -50,7 +50,7 @@ async function listarHospedes() {
         <tr>
           <td>${hospede.nome}</td>
           <td>${hospede.quarto}</td>
-          <td>R$ ${hospede.valor}</td>
+          <td>R$ ${hospede.valor_diaria}</td>
           <td>${hospede.status}</td>
         </tr>
       `;
