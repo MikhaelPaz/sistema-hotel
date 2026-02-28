@@ -5,7 +5,7 @@ const API = window.location.origin;
 async function cadastrar() {
   const nome = document.getElementById("nome").value;
   const quarto = document.getElementById("quarto").value;
-  const valor_diaria = document.getElementById("valor_diaria").value;
+  const valor_diaria = document.getElementById("valor").value;
 
   if (!nome || !quarto || !valor_diaria) {
     alert("Preencha todos os campos!");
