@@ -1,11 +1,11 @@
 {
   "name": "hotel-system",
   "version": "1.0.0",
-  "description": "",
+  "description": "Sistema de gerenciamento de hotel desenvolvido com:",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "start": "node server.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -16,5 +16,13 @@
     "express": "^5.2.1",
     "mysql2": "^3.18.2",
     "sqlite3": "^5.1.7"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MikhaelPaz/sistema-hotel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MikhaelPaz/sistema-hotel/issues"
+  },
+  "homepage": "https://github.com/MikhaelPaz/sistema-hotel#readme"
 }
