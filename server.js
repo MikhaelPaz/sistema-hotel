@@ -11,22 +11,24 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+const mysql = require("mysql2");
+
 const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT
 });
-
-
 
 db.connect(err => {
-    if (err) {
-        console.error("Erro ao conectar:", err);
-    } else {
-        console.log("Conectado ao MySQL");
-    }
+  if (err) {
+    console.error("Erro ao conectar:", err);
+  } else {
+    console.log("Conectado ao MySQL");
+  }
 });
+
 
 // CADASTRAR
 app.post("/cadastrar", (req, res) => {
@@ -110,6 +112,8 @@ app.post("/limpar-faturamento", (req, res) => {
 
 
 
-app.listen(process.env.PORT, () => {
-    console.log(`Servidor rodando na porta ${process.env.PORT}`);
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Servidor rodando na porta " + PORT);
 });
