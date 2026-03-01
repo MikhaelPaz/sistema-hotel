@@ -1,44 +1,3 @@
-// 1. Mude para Pool para evitar quedas de conexão
-
-
-// CHECKOUT CORRIGIDO
-app.post("/checkout/:id", (req, res) => {
-    const id = req.params.id;
-    const { quantidade_diarias } = req.body;
-
-    // Garantir que é um número
-    const dias = parseInt(quantidade_diarias);
-
-    if (isNaN(dias)) {
-        return res.status(400).send("Quantidade de diárias inválida");
-    }
-
-    db.query("SELECT valor_diaria FROM hospedagens WHERE id = ?", [id], (err, result) => {
-        if (err) return res.status(500).json({ error: "Erro interno" });
-        if (result.length === 0) return res.status(404).send("Hóspede não encontrado");
-
-        const total = result[0].valor_diaria * dias;
-
-        db.query(
-            `UPDATE hospedagens 
-             SET quantidade_diarias = ?, 
-                 total_pago = ?, 
-                 status = 'finalizado',
-                 data_checkout = NOW()
-             WHERE id = ?`,
-            [dias, total, id],
-            (err) => {
-                if (err) return res.status(500).json({ error: "Erro ao atualizar" });
-                res.json({ total });
-            }
-        );
-    });
-});
-
-
-
-
-
 require("dotenv").config();
 
 const express = require("express");
@@ -52,14 +11,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-const db = mysql.createPool({
+const db = mysql.createConnection({
     host: process.env.MYSQLHOST,
     user: process.env.MYSQLUSER,
     password: process.env.MYSQLPASSWORD,
-    database: process.env.DB_NAME,
-    waitForConnections: true,
-    connectionLimit: 10
+    database: process.env.DB_NAME
 });
+
 
 
 db.connect(err => {
@@ -97,18 +55,12 @@ app.post("/checkout/:id", (req, res) => {
     const id = req.params.id;
     const { quantidade_diarias } = req.body;
 
-
- const dias = parseInt(quantidade_diarias);
-
-    if (isNaN(dias)) {
-        return res.status(400).send("Quantidade de diárias inválida");
-    }
-
-    db.query("SELECT valor_diaria FROM hospedagens WHERE id = ?", [id], (err, result) => {
-        if (err) return res.status(500).json({ error: "Erro interno" });
+    db.query("SELECT * FROM hospedagens WHERE id = ?", [id], (err, result) => {
+        if (err) return res.status(500).send(err);
         if (result.length === 0) return res.status(404).send("Hóspede não encontrado");
 
-        const total = result[0].valor_diaria * dias;
+        const hospede = result[0];
+        const total = hospede.valor_diaria * quantidade_diarias;
 
         db.query(
             `UPDATE hospedagens 
@@ -117,9 +69,9 @@ app.post("/checkout/:id", (req, res) => {
                  status = 'finalizado',
                  data_checkout = NOW()
              WHERE id = ?`,
-            [dias, total, id],
+            [quantidade_diarias, total, id],
             (err) => {
-                if (err) return res.status(500).json({ error: "Erro ao atualizar" });
+                if (err) return res.status(500).send(err);
                 res.json({ total });
             }
         );
