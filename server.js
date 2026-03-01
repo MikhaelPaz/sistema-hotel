@@ -37,7 +37,7 @@ app.post("/cadastrar", (req, res) => {
         [nome, quarto, valor_diaria],
         (err) => {
             if (err) return res.status(500).send(err);
-            res.send("Hóspede cadastrado");
+            res.json({ message: "Hóspede cadastrado" });
         }
     );
 });
