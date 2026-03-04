@@ -1,3 +1,4 @@
+/* CSS RESET */
 * {
     margin: 0;
     padding: 0;
@@ -19,12 +20,18 @@ body {
     margin: auto;
 }
 
-/* Título */
+/* Títulos */
 h1 {
     text-align: center;
     margin-bottom: 30px;
     color: white;
     font-size: 32px;
+}
+
+h2 {
+    margin-top: 50px;
+    margin-bottom: 15px;
+    color: #2a5298;
 }
 
 /* Cards */
@@ -39,12 +46,6 @@ h1 {
 
 .card:hover {
     transform: translateY(-5px);
-}
-
-/* Título do card */
-.card h2 {
-    margin-bottom: 15px;
-    color: #2a5298;
 }
 
 /* Valores */
@@ -128,7 +129,42 @@ button.danger:hover {
     color: rgb(82, 80, 80);
 }
 
-#tabela{
+/* Tabela */
+#tabela_ {
     width: 70%;
-    margin-left: 15%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Cabeçalho */
+#tabela_ thead {
+    background-color: #2a5298;
+    color: white;
+}
+
+#tabela_ th {
+    padding: 12px;
+    text-align: center;
+}
+
+/* Células */
+#tabela_ td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Linhas alternadas */
+#tabela_ tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Efeito ao passar o mouse */
+#tabela_ tbody tr:hover {
+    background-color: #dfe9ff;
+    transition: 0.2s;
 }
