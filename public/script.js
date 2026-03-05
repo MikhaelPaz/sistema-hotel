@@ -59,10 +59,9 @@ async function listarHospedes() {
 // ================== CHECKOUT ==================
 async function checkout(id) {
   const quantidade_diarias = prompt("Quantas diárias foram consumidas?");
-  if (quantidade_diarias === null || quantidade_diarias === "") return;
+  if (!quantidade_diarias) return;
 
   try {
-    // 1. Faz o Checkout no servidor para calcular o valor
     const response = await fetch(`${API}/checkout/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -74,29 +73,18 @@ async function checkout(id) {
     if (response.ok) {
       alert(`Check-out realizado!\nTotal pago: R$ ${data.total.toFixed(2)}`);
 
-      // 2. Tenta apagar do banco de dados
-      try {
-        const deleteRes = await fetch(`${API}/hospedes/${id}`, { method: "DELETE" });
-
-        if (deleteRes.ok) {
-          // 3. Atualiza a tela após apagar com sucesso
-          if (document.getElementById("tabela")) listarHospedes();
-          if (document.getElementById("agenda")) listarHospedesAgenda();
-        } else {
-            console.error("Servidor recusou a exclusão (Erro 500). Verifique o backend.");
-        }
-      } catch (err) {
-        console.error("Erro ao tentar deletar:", err);
-      }
-
+      // Como o servidor já deletou, basta recarregar as listas na tela
+      if (document.getElementById("tabela")) listarHospedes();
+      if (document.getElementById("agenda")) listarHospedesAgenda();
+      
     } else {
-      alert("Erro ao processar checkout: " + (data.message || "Erro desconhecido"));
+      alert("Erro: " + data.message);
     }
   } catch (error) {
-    console.error("Erro na comunicação:", error);
-    alert("Erro ao conectar com o servidor.");
+    console.error("Erro:", error);
   }
 }
+
 
 
 // ================== LISTAR NA AGENDA (INDEX.HTML) ==================

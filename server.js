@@ -51,46 +51,29 @@ app.get("/hospedes", (req, res) => {
 });
 
 // CHECKOUT
-app.post("/checkout/:id", (req, res) => {
-    const id = req.params.id;
-    const { quantidade_diarias } = req.body;
+app.post('/checkout/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { quantidade_diarias } = req.body;
 
-    db.query("SELECT * FROM hospedagens WHERE id = ?", [id], (err, result) => {
-        if (err) return res.status(500).send(err);
-        if (result.length === 0) return res.status(404).send("Hóspede não encontrado");
+        // 1. Busca o hóspede no banco para calcular o valor
+        const hospede = await Hospede.findById(id); // Se usar MongoDB
+        // const hospede = await db.query('SELECT * FROM hospedes WHERE id = ?', [id]); // Se usar SQL
 
-        const hospede = result[0];
+        if (!hospede) return res.status(404).json({ message: "Hóspede não encontrado" });
+
         const total = hospede.valor_diaria * quantidade_diarias;
 
-        db.query(
-            `UPDATE hospedagens 
-             SET quantidade_diarias = ?, 
-                 total_pago = ?, 
-                 status = 'finalizado',
-                 data_checkout = NOW()
-             WHERE id = ?`,
-            [quantidade_diarias, total, id],
-            (err) => {
-                if (err) return res.status(500).send(err);
-                res.json({ total });
-            }
-        );
-    });
-});
+        // 2. COMANDO VITAL: Deleta do banco de dados imediatamente
+        await Hospede.findByIdAndDelete(id); 
+        // Ou se for SQL: await db.query('DELETE FROM hospedes WHERE id = ?', [id]);
 
-// Rota para deletar do banco de dados
-app.delete('/hospedes/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        // Exemplo usando a biblioteca 'db' (ajuste conforme seu driver: pg, mysql2, etc)
-        // Substitua 'hospedes' pelo nome da sua tabela
-        const query = 'DELETE FROM hospedes WHERE id = ?'; // Use $1 se for PostgreSQL
-        await db.query(query, [id]);
+        // 3. Retorna o total para o frontend mostrar o alerta antes de sumir
+        res.json({ total: total, message: "Checkout finalizado e registro removido." });
 
-        res.status(200).json({ message: "Removido com sucesso!" });
     } catch (error) {
-        console.error("Erro no Banco de Dados:", error);
-        res.status(500).json({ message: "Erro interno no servidor ao deletar." });
+        console.error(error);
+        res.status(500).json({ message: "Erro ao processar checkout" });
     }
 });
 
