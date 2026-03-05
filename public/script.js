@@ -130,3 +130,7 @@ async function listarHospedesAgenda() {
     console.error("Erro ao buscar hóspedes para agenda:", error);
   }
 }
+
+if (document.getElementById("agenda")) {
+  listarHospedesAgenda();
+}
