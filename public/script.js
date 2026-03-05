@@ -106,7 +106,6 @@ async function checkout(id) {
       }
 
       if (document.getElementById("ativos")) atualizarContadorAtivos();
-
     } else {
       alert("Erro no servidor: " + (data.message || data));
     }
