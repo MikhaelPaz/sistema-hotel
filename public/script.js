@@ -62,7 +62,7 @@ async function checkout(id) {
   if (quantidade_diarias === null || quantidade_diarias === "") return;
 
   try {
-    // 1. Faz o Checkout no servidor (para calcular o valor e mudar status se necessário)
+    // 1. Faz o Checkout no servidor para calcular o valor
     const response = await fetch(`${API}/checkout/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -74,41 +74,30 @@ async function checkout(id) {
     if (response.ok) {
       alert(`Check-out realizado!\nTotal pago: R$ ${data.total.toFixed(2)}`);
 
-      // 2. AGORA APAGA DO BANCO DE DADOS
-      // Dentro da função checkout, na parte do DELETE:
+      // 2. Tenta apagar do banco de dados
       try {
-          const deleteResponse = await fetch(`${API}/hospedes/${id}`, {
-              method: "DELETE"
-            });
-          
-          if (!deleteResponse.ok) {
-              const errorData = await deleteResponse.json();
-              throw new Error(errorData.message || "Erro ao deletar do banco");
-          }
+        const deleteRes = await fetch(`${API}/hospedes/${id}`, { method: "DELETE" });
 
-    // Só atualiza a tela se o servidor confirmar a exclusão
-    if (document.getElementById("tabela")) listarHospedes();
-    if (document.getElementById("agenda")) listarHospedesAgenda();
-
-} catch (err) {
-    console.error("Erro ao deletar:", err);
-    alert("O checkout foi feito, mas não conseguimos apagar o registro: " + err.message);
-}
-      
-
-      if (deleteResponse.ok) {
-        // 3. Atualiza a interface (Agenda ou Tabela) conforme a página atual
-        if (document.getElementById("tabela")) listarHospedes();
-        if (document.getElementById("agenda")) listarHospedesAgenda();
+        if (deleteRes.ok) {
+          // 3. Atualiza a tela após apagar com sucesso
+          if (document.getElementById("tabela")) listarHospedes();
+          if (document.getElementById("agenda")) listarHospedesAgenda();
+        } else {
+            console.error("Servidor recusou a exclusão (Erro 500). Verifique o backend.");
+        }
+      } catch (err) {
+        console.error("Erro ao tentar deletar:", err);
       }
+
     } else {
-      alert("Erro ao processar checkout: " + (data.message || data));
+      alert("Erro ao processar checkout: " + (data.message || "Erro desconhecido"));
     }
   } catch (error) {
     console.error("Erro na comunicação:", error);
     alert("Erro ao conectar com o servidor.");
   }
 }
+
 
 // ================== LISTAR NA AGENDA (INDEX.HTML) ==================
 async function listarHospedesAgenda() {

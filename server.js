@@ -78,28 +78,19 @@ app.post("/checkout/:id", (req, res) => {
     });
 });
 
-// Rota para DELETAR o hóspede
-app.delete('/hospedes/:id', (req, res) => {
+// Rota para deletar do banco de dados
+app.delete('/hospedes/:id', async (req, res) => {
+    const { id } = req.params;
     try {
-        const id = req.params.id;
+        // Exemplo usando a biblioteca 'db' (ajuste conforme seu driver: pg, mysql2, etc)
+        // Substitua 'hospedes' pelo nome da sua tabela
+        const query = 'DELETE FROM hospedes WHERE id = ?'; // Use $1 se for PostgreSQL
+        await db.query(query, [id]);
 
-        // Se você usa um ARRAY local (ex: let hospedes = []):
-        const index = hospedes.findIndex(h => h.id == id || h._id == id);
-        
-        if (index !== -1) {
-            hospedes.splice(index, 1); // Remove do array
-            res.json({ message: "Hóspede removido com sucesso!" });
-        } else {
-            res.status(404).json({ message: "Hóspede não encontrado!" });
-        }
-
-        // SE VOCÊ USA MONGODB, use este:
-        // await Hospede.findByIdAndDelete(id);
-        // res.json({ message: "Removido!" });
-
+        res.status(200).json({ message: "Removido com sucesso!" });
     } catch (error) {
-        console.error("Erro no servidor:", error);
-        res.status(500).json({ message: "Erro interno ao deletar" });
+        console.error("Erro no Banco de Dados:", error);
+        res.status(500).json({ message: "Erro interno no servidor ao deletar." });
     }
 });
 
