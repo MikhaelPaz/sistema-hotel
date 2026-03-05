@@ -35,25 +35,25 @@ h2 {
 }
 
 /* Cards */
-/*.card {
-/*    background: white;
-/*    padding: 25px;
-/*    border-radius: 12px;
-/*    margin-bottom: 20px;
-/*    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-/*    transition: 0.3s;
-/*}
-/*
-/*.card:hover {
-/*    transform: translateY(-5px);
-/*}
-/*
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
 /* Valores */
-/*.card p {
-/*    font-size: 28px;
-/*    font-weight: bold;
-/*    color: #1e3c72;
-/*}
+.card p {
+    font-size: 28px;
+    font-weight: bold;
+    color: #1e3c72;
+}
 
 /* Lista */
 ul {
