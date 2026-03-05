@@ -73,12 +73,15 @@ async function checkout(id) {
     if (response.ok) {
       alert(`Check-out realizado!\nTotal a pagar: R$ ${data.total.toFixed(2)}`);
       
-      // Deleta o registro após o checkout
-      await fetch(`${API}/hospedes/${id}`, { method: "DELETE" });
+      // 1. Apaga do banco
+    await fetch(`${API}/hospedes/${id}`, { method: "DELETE" });
 
-      // Recarrega as listas se elas existirem na página atual
-      if (document.getElementById("tabela")) listarHospedes();
-      if (document.getElementById("agenda")) listarHospedesAgenda();
+    // 2. Atualiza APENAS o que existe na página atual para evitar erros
+    const tabela = document.getElementById("tabela");
+    const agenda = document.getElementById("agenda");
+
+    if (tabela) listarHospedes();       // Recarrega a tabela se ela existir
+    if (agenda) listarHospedesAgenda(); // Recarrega a agenda se ela existir
     } else {
       alert("Erro no servidor: " + data.message);
     }
