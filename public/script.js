@@ -46,18 +46,20 @@ async function listarHospedes() {
     tabela.innerHTML = "";
 
     hospedes.forEach(hospede => {
+      // Verificamos o status e já criamos o HTML do botão ou do texto
+      // Convertemos para minúsculo para evitar erro de "Ativo" vs "ativo"
+      const acaoHtml = hospede.status.toLowerCase() === 'hospedado' 
+        ? `<button onclick="checkout(${hospede.id || hospede._id})">Check-out</button>` 
+        : 'Finalizado';
+
       tabela.innerHTML += `
         <tr>
           <td>${hospede.nome}</td>
           <td>${hospede.quarto}</td>
           <td>R$ ${hospede.valor_diaria}</td>
           <td>${hospede.status}</td>
+          <td>${acaoHtml}</td>
         </tr>
-        <td>
-        ${estaAtivo 
-          ? `<button onclick="checkout(${hospede.id})">Check-out</button>` 
-          : 'Finalizado'}
-        </td>
       `;
     });
 
