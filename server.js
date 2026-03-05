@@ -80,7 +80,22 @@ app.post('/checkout/:id', async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 
+=======
+// Rota para deletar hóspede
+app.delete('/hospedes/:id', (req, res) => {
+    const id = req.params.id;
+    
+    // Se estiver usando um Array simples:
+    hospedes = hospedes.filter(h => h.id != id); 
+    
+    // Se estiver usando MongoDB:
+    // await Hospede.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Hóspede removido com sucesso!" });
+});
+>>>>>>> 8fb4781 (deletar)
 
 // FATURAMENTO MENSAL
 app.get("/faturamento", (req, res) => {

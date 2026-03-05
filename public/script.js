@@ -39,6 +39,7 @@ async function checkout(id) {
   if (quantidade_diarias === null || quantidade_diarias === "") return;
 
   try {
+    // 1. Faz o Checkout no servidor (para calcular o valor e mudar status se necessário)
     const response = await fetch(`${API}/checkout/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -50,15 +51,32 @@ async function checkout(id) {
     if (response.ok) {
       alert(`Check-out realizado!\nTotal pago: R$ ${data.total.toFixed(2)}`);
 
+<<<<<<< HEAD
       // Atualiza a interface (como o banco já deletou, ele vai sumir da lista)
       if (document.getElementById("tabela")) listarHospedes();
       if (document.getElementById("agenda")) listarHospedesAgenda();
       
+=======
+      // 2. AGORA APAGA DO BANCO DE DADOS
+      const deleteResponse = await fetch(`${API}/hospedes/${id}`, {
+        method: "DELETE"
+      });
+
+      if (deleteResponse.ok) {
+        // 3. Atualiza a interface (Agenda ou Tabela) conforme a página atual
+        if (document.getElementById("tabela")) listarHospedes();
+        if (document.getElementById("agenda")) listarHospedesAgenda();
+      }
+>>>>>>> 8fb4781 (deletar)
     } else {
-      alert("Erro no servidor: " + data.message);
+      alert("Erro ao processar checkout: " + (data.message || data));
     }
   } catch (error) {
+<<<<<<< HEAD
     console.error("Erro na requisição:", error);
+=======
+    console.error("Erro na comunicação:", error);
+>>>>>>> 8fb4781 (deletar)
     alert("Erro ao conectar com o servidor.");
   }
 }
