@@ -78,17 +78,29 @@ app.post("/checkout/:id", (req, res) => {
     });
 });
 
-// Rota para deletar hóspede
+// Rota para DELETAR o hóspede
 app.delete('/hospedes/:id', (req, res) => {
-    const id = req.params.id;
-    
-    // Se estiver usando um Array simples:
-    hospedes = hospedes.filter(h => h.id != id); 
-    
-    // Se estiver usando MongoDB:
-    // await Hospede.findByIdAndDelete(id);
+    try {
+        const id = req.params.id;
 
-    res.status(200).json({ message: "Hóspede removido com sucesso!" });
+        // Se você usa um ARRAY local (ex: let hospedes = []):
+        const index = hospedes.findIndex(h => h.id == id || h._id == id);
+        
+        if (index !== -1) {
+            hospedes.splice(index, 1); // Remove do array
+            res.json({ message: "Hóspede removido com sucesso!" });
+        } else {
+            res.status(404).json({ message: "Hóspede não encontrado!" });
+        }
+
+        // SE VOCÊ USA MONGODB, use este:
+        // await Hospede.findByIdAndDelete(id);
+        // res.json({ message: "Removido!" });
+
+    } catch (error) {
+        console.error("Erro no servidor:", error);
+        res.status(500).json({ message: "Erro interno ao deletar" });
+    }
 });
 
 // FATURAMENTO MENSAL

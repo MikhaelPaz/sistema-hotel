@@ -75,9 +75,26 @@ async function checkout(id) {
       alert(`Check-out realizado!\nTotal pago: R$ ${data.total.toFixed(2)}`);
 
       // 2. AGORA APAGA DO BANCO DE DADOS
-      const deleteResponse = await fetch(`${API}/hospedes/${id}`, {
-        method: "DELETE"
-      });
+      // Dentro da função checkout, na parte do DELETE:
+      try {
+          const deleteResponse = await fetch(`${API}/hospedes/${id}`, {
+              method: "DELETE"
+            });
+          
+          if (!deleteResponse.ok) {
+              const errorData = await deleteResponse.json();
+              throw new Error(errorData.message || "Erro ao deletar do banco");
+          }
+
+    // Só atualiza a tela se o servidor confirmar a exclusão
+    if (document.getElementById("tabela")) listarHospedes();
+    if (document.getElementById("agenda")) listarHospedesAgenda();
+
+} catch (err) {
+    console.error("Erro ao deletar:", err);
+    alert("O checkout foi feito, mas não conseguimos apagar o registro: " + err.message);
+}
+      
 
       if (deleteResponse.ok) {
         // 3. Atualiza a interface (Agenda ou Tabela) conforme a página atual
