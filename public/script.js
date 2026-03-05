@@ -75,7 +75,7 @@ async function checkout(id) {
 
   try {
     const response = await fetch(`${API}/checkout/${id}`, {
-      method: "PUT" // Ou "POST", dependendo de como você configurou seu servidor
+      method: "POST" // Ou "POST", dependendo de como você configurou seu servidor
     });
 
     if (response.ok) {
