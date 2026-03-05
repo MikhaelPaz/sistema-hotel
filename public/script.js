@@ -107,3 +107,33 @@ async function checkout(id) {
 if (document.getElementById("tabela")) {
   listarHospedes();
 }
+
+// Colocar hospedes na agenda do index
+async function listarHospedes() {
+  try {
+    const response = await fetch(`${API}/hospedes`);
+    const hospedes = await response.json();
+
+    const tabela = document.getElementById("agenda");
+    tabela.innerHTML = "";
+
+    hospedes.forEach(hospede => {
+      // Verificamos o status e já criamos o HTML do botão ou do texto
+      // Convertemos para minúsculo para evitar erro de "Ativo" vs "ativo"
+
+
+      tabela.innerHTML += `
+        <ul>
+          <li>${hospede.nome}</li>
+          <li>${hospede.quarto}</li>
+          <li>R$ ${hospede.valor_diaria}</li>
+          <li>${hospede.status}</li>
+          <li>${acaoHtml}</li>
+        </ul>
+      `;
+    });
+
+  } catch (error) {
+    console.error("Erro ao buscar hóspedes:", error);
+  }
+}
