@@ -25,18 +25,28 @@ db.connect(err => {
     }
 });
 
-// CADASTRAR
+// CADASTRAR (Ajustado)
 app.post("/cadastrar", (req, res) => {
     const { nome, quarto, valor_diaria } = req.body;
+
+    // Verificação de segurança: impede inserir valores nulos no MySQL
+    if (!nome || !quarto || !valor_diaria) {
+        return res.status(400).json({ message: "Preencha todos os campos corretamente." });
+    }
+
     db.query(
         "INSERT INTO hospedagens (nome, quarto, valor_diaria, status) VALUES (?, ?, ?, 'hospedado')",
         [nome, quarto, valor_diaria],
         (err) => {
-            if (err) return res.status(500).send(err);
-            res.json({ message: "Hóspede cadastrado" });
+            if (err) {
+                console.error("Erro no MySQL:", err);
+                return res.status(500).send(err);
+            }
+            res.json({ message: "Hóspede cadastrado com sucesso!" });
         }
     );
 });
+
 
 // LISTAR
 app.get("/hospedes", (req, res) => {

@@ -1,5 +1,50 @@
 const API = window.location.origin;
 
+
+// ================== CADASTRAR (ADICIONE ESTE BLOCO) ==================
+async function cadastrar() {
+  const nome = document.getElementById("nome").value;
+  const quarto = document.getElementById("quarto").value;
+  const valor_diaria = document.getElementById("valor_diaria").value;
+
+  // Validação simples para não enviar campos vazios
+  if (!nome || !quarto || !valor_diaria) {
+    alert("Por favor, preencha todos os campos!");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API}/cadastrar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        nome: nome, 
+        quarto: quarto, 
+        valor_diaria: valor_diaria 
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert(data.message);
+      // Limpa os campos após cadastrar
+      document.getElementById("nome").value = "";
+      document.getElementById("quarto").value = "";
+      document.getElementById("valor_diaria").value = "";
+      
+      // Atualiza a tabela na mesma página
+      listarHospedes(); 
+    } else {
+      alert("Erro ao cadastrar: " + data.message);
+    }
+  } catch (error) {
+    console.error("Erro na requisição de cadastro:", error);
+    alert("Erro ao conectar com o servidor.");
+  }
+}
+
+
 // ================== LISTAR NA TABELA (CADASTRO.HTML) ==================
 async function listarHospedes() {
   const tabela = document.getElementById("tabela");
