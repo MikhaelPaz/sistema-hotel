@@ -11,9 +11,8 @@ async function listarHospedes() {
     tabela.innerHTML = "";
 
     hospedes.forEach(hospede => {
-      const idReal = hospede._id || hospede.id; // Suporta MongoDB e outros
+      const idReal = hospede._id || hospede.id;
       
-      // IMPORTANTE: aspas simples '${idReal}' para IDs com letras não quebrarem
       const acaoHtml = hospede.status.toLowerCase() === 'hospedado' 
         ? `<button onclick="checkout('${idReal}')">Check-out</button>` 
         : 'Finalizado';
@@ -35,11 +34,10 @@ async function listarHospedes() {
 // ================== CHECKOUT ==================
 async function checkout(id) {
   const quantidade_diarias = prompt("Quantas diárias foram consumidas?");
-  // Cancela se o usuário não digitar nada
   if (quantidade_diarias === null || quantidade_diarias === "") return;
 
   try {
-    // 1. Faz o Checkout no servidor (para calcular o valor e mudar status se necessário)
+    // 1. Faz o Checkout no servidor
     const response = await fetch(`${API}/checkout/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -51,32 +49,21 @@ async function checkout(id) {
     if (response.ok) {
       alert(`Check-out realizado!\nTotal pago: R$ ${data.total.toFixed(2)}`);
 
-<<<<<<< HEAD
-      // Atualiza a interface (como o banco já deletou, ele vai sumir da lista)
-      if (document.getElementById("tabela")) listarHospedes();
-      if (document.getElementById("agenda")) listarHospedesAgenda();
-      
-=======
-      // 2. AGORA APAGA DO BANCO DE DADOS
+      // 2. Chama a exclusão após o checkout (Se o seu servidor já não deleta no POST)
       const deleteResponse = await fetch(`${API}/hospedes/${id}`, {
         method: "DELETE"
       });
 
       if (deleteResponse.ok) {
-        // 3. Atualiza a interface (Agenda ou Tabela) conforme a página atual
+        // 3. Atualiza a interface
         if (document.getElementById("tabela")) listarHospedes();
         if (document.getElementById("agenda")) listarHospedesAgenda();
       }
->>>>>>> 8fb4781 (deletar)
     } else {
-      alert("Erro ao processar checkout: " + (data.message || data));
+      alert("Erro no servidor: " + (data.message || data));
     }
   } catch (error) {
-<<<<<<< HEAD
-    console.error("Erro na requisição:", error);
-=======
     console.error("Erro na comunicação:", error);
->>>>>>> 8fb4781 (deletar)
     alert("Erro ao conectar com o servidor.");
   }
 }
@@ -92,7 +79,6 @@ async function listarHospedesAgenda() {
     agenda.innerHTML = "";
 
     hospedes.forEach(hospede => {
-      // Agenda só mostra quem ainda NÃO saiu (status hospedado)
       if (hospede.status.toLowerCase() === 'hospedado') {
         agenda.innerHTML += `
           <li>
@@ -105,6 +91,6 @@ async function listarHospedesAgenda() {
   }
 }
 
-// Inicialização (não alterada)
+// Inicialização
 if (document.getElementById("tabela")) listarHospedes();
 if (document.getElementById("agenda")) listarHospedesAgenda();

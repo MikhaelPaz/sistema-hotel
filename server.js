@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
@@ -18,8 +17,6 @@ const db = mysql.createConnection({
     database: process.env.MYSQL_DATABASE
 });
 
-
-
 db.connect(err => {
     if (err) {
         console.error("Erro ao conectar:", err);
@@ -31,9 +28,8 @@ db.connect(err => {
 // CADASTRAR
 app.post("/cadastrar", (req, res) => {
     const { nome, quarto, valor_diaria } = req.body;
-
     db.query(
-        "INSERT INTO hospedagens (nome, quarto, valor_diaria) VALUES (?, ?, ?)",
+        "INSERT INTO hospedagens (nome, quarto, valor_diaria, status) VALUES (?, ?, ?, 'hospedado')",
         [nome, quarto, valor_diaria],
         (err) => {
             if (err) return res.status(500).send(err);
@@ -50,87 +46,47 @@ app.get("/hospedes", (req, res) => {
     });
 });
 
-// CHECKOUT
-app.post('/checkout/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        const { quantidade_diarias } = req.body;
-
-        // 1. Busca o hóspede para calcular o valor antes de apagar
-        const hospede = await Hospede.findById(id); 
-
-        if (!hospede) {
-            return res.status(404).json({ message: "Hóspede não encontrado" });
-        }
-
-        const total = hospede.valor_diaria * quantidade_diarias;
-
-        // 2. DELETA o hóspede do banco de dados permanentemente
-        await Hospede.findByIdAndDelete(id); 
-
-        // 3. Retorna o sucesso e o valor
-        res.json({ 
-            total: total, 
-            message: "Checkout finalizado e hóspede removido do sistema." 
-        });
-
-    } catch (error) {
-        console.error("Erro no Checkout:", error);
-        res.status(500).json({ message: "Erro interno ao processar checkout" });
-    }
-});
-
-<<<<<<< HEAD
-
-=======
-// Rota para deletar hóspede
-app.delete('/hospedes/:id', (req, res) => {
+// CHECKOUT (CORRIGIDO PARA MYSQL)
+app.post('/checkout/:id', (req, res) => {
     const id = req.params.id;
-    
-    // Se estiver usando um Array simples:
-    hospedes = hospedes.filter(h => h.id != id); 
-    
-    // Se estiver usando MongoDB:
-    // await Hospede.findByIdAndDelete(id);
+    const { quantidade_diarias } = req.body;
 
-    res.status(200).json({ message: "Hóspede removido com sucesso!" });
-});
->>>>>>> 8fb4781 (deletar)
+    // 1. Busca o hóspede para pegar o valor da diária
+    db.query("SELECT valor_diaria FROM hospedagens WHERE id = ?", [id], (err, results) => {
+        if (err) return res.status(500).json({ message: "Erro ao buscar hóspede" });
+        if (results.length === 0) return res.status(404).json({ message: "Hóspede não encontrado" });
 
-// FATURAMENTO MENSAL
-app.get("/faturamento", (req, res) => {
-    db.query(
-        `SELECT SUM(total_pago) as total 
-         FROM hospedagens 
-         WHERE MONTH(data_checkout) = MONTH(CURRENT_DATE())
-         AND YEAR(data_checkout) = YEAR(CURRENT_DATE())`,
-        (err, result) => {
-            if (err) return res.status(500).send(err);
-            res.json({ total: result[0].total || 0 });
-        }
-    );
-});
+        const valor_diaria = results[0].valor_diaria;
+        const total = valor_diaria * quantidade_diarias;
 
-// LIMPAR FATURAMENTO MENSAL
-app.post("/limpar-faturamento", (req, res) => {
-
-    const sql = `
-        UPDATE hospedagens
-        SET total_pago = 0
-        WHERE MONTH(data_checkout) = MONTH(CURRENT_DATE())
-        AND YEAR(data_checkout) = YEAR(CURRENT_DATE())
-    `;
-
-    db.query(sql, (err) => {
-        if (err) return res.status(500).send(err);
-        res.send("Faturamento mensal zerado");
+        // 2. Deleta o hóspede (Como você pediu para apagar do banco ao finalizar)
+        db.query("DELETE FROM hospedagens WHERE id = ?", [id], (errDelete) => {
+            if (errDelete) return res.status(500).json({ message: "Erro ao deletar" });
+            
+            res.json({ 
+                total: total, 
+                message: "Checkout realizado e registro removido." 
+            });
+        });
     });
 });
 
+// ROTA DELETE AVULSA (CORRIGIDA)
+app.delete('/hospedes/:id', (req, res) => {
+    const id = req.params.id;
+    db.query("DELETE FROM hospedagens WHERE id = ?", [id], (err) => {
+        if (err) return res.status(500).send(err);
+        res.json({ message: "Hóspede removido com sucesso!" });
+    });
+});
 
+// FATURAMENTO E PORTA (MANTIDOS)
+app.get("/faturamento", (req, res) => {
+    db.query("SELECT SUM(valor_diaria) as total FROM hospedagens", (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.json({ total: result[0].total || 0 });
+    });
+});
 
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("Servidor rodando");
-});
+app.listen(PORT, () => console.log("Servidor rodando na porta " + PORT));
