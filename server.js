@@ -56,26 +56,31 @@ app.post('/checkout/:id', async (req, res) => {
         const id = req.params.id;
         const { quantidade_diarias } = req.body;
 
-        // 1. Busca o hóspede no banco para calcular o valor
-        const hospede = await Hospede.findById(id); // Se usar MongoDB
-        // const hospede = await db.query('SELECT * FROM hospedes WHERE id = ?', [id]); // Se usar SQL
+        // 1. Busca o hóspede para calcular o valor antes de apagar
+        const hospede = await Hospede.findById(id); 
 
-        if (!hospede) return res.status(404).json({ message: "Hóspede não encontrado" });
+        if (!hospede) {
+            return res.status(404).json({ message: "Hóspede não encontrado" });
+        }
 
         const total = hospede.valor_diaria * quantidade_diarias;
 
-        // 2. COMANDO VITAL: Deleta do banco de dados imediatamente
+        // 2. DELETA o hóspede do banco de dados permanentemente
         await Hospede.findByIdAndDelete(id); 
-        // Ou se for SQL: await db.query('DELETE FROM hospedes WHERE id = ?', [id]);
 
-        // 3. Retorna o total para o frontend mostrar o alerta antes de sumir
-        res.json({ total: total, message: "Checkout finalizado e registro removido." });
+        // 3. Retorna o sucesso e o valor
+        res.json({ 
+            total: total, 
+            message: "Checkout finalizado e hóspede removido do sistema." 
+        });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Erro ao processar checkout" });
+        console.error("Erro no Checkout:", error);
+        res.status(500).json({ message: "Erro interno ao processar checkout" });
     }
 });
+
+
 
 // FATURAMENTO MENSAL
 app.get("/faturamento", (req, res) => {

@@ -1,36 +1,9 @@
 const API = window.location.origin;
 
-// ================== CADASTRAR ==================
-async function cadastrar() {
-  const nome = document.getElementById("nome").value;
-  const quarto = document.getElementById("quarto").value;
-  const valor_diaria = document.getElementById("valor_diaria").value;
-
-  if (!nome || !quarto || !valor_diaria) {
-    alert("Preencha todos os campos!");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API}/cadastrar`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, quarto, valor_diaria })
-    });
-
-    const data = await response.json();
-    alert(data.message);
-    window.location.href = "index.html";
-  } catch (error) {
-    console.error("Erro ao cadastrar:", error);
-    alert("Erro ao cadastrar!");
-  }
-}
-
 // ================== LISTAR NA TABELA (CADASTRO.HTML) ==================
 async function listarHospedes() {
   const tabela = document.getElementById("tabela");
-  if (!tabela) return; // Sai da função se não estiver na página de cadastro
+  if (!tabela) return;
 
   try {
     const response = await fetch(`${API}/hospedes`);
@@ -38,8 +11,11 @@ async function listarHospedes() {
     tabela.innerHTML = "";
 
     hospedes.forEach(hospede => {
+      const idReal = hospede._id || hospede.id; // Suporta MongoDB e outros
+      
+      // IMPORTANTE: aspas simples '${idReal}' para IDs com letras não quebrarem
       const acaoHtml = hospede.status.toLowerCase() === 'hospedado' 
-        ? `<button onclick="checkout(${hospede.id || hospede._id})">Check-out</button>` 
+        ? `<button onclick="checkout('${idReal}')">Check-out</button>` 
         : 'Finalizado';
 
       tabela.innerHTML += `
@@ -59,7 +35,8 @@ async function listarHospedes() {
 // ================== CHECKOUT ==================
 async function checkout(id) {
   const quantidade_diarias = prompt("Quantas diárias foram consumidas?");
-  if (!quantidade_diarias) return;
+  // Cancela se o usuário não digitar nada
+  if (quantidade_diarias === null || quantidade_diarias === "") return;
 
   try {
     const response = await fetch(`${API}/checkout/${id}`, {
@@ -73,19 +50,18 @@ async function checkout(id) {
     if (response.ok) {
       alert(`Check-out realizado!\nTotal pago: R$ ${data.total.toFixed(2)}`);
 
-      // Como o servidor já deletou, basta recarregar as listas na tela
+      // Atualiza a interface (como o banco já deletou, ele vai sumir da lista)
       if (document.getElementById("tabela")) listarHospedes();
       if (document.getElementById("agenda")) listarHospedesAgenda();
       
     } else {
-      alert("Erro: " + data.message);
+      alert("Erro no servidor: " + data.message);
     }
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("Erro na requisição:", error);
+    alert("Erro ao conectar com o servidor.");
   }
 }
-
-
 
 // ================== LISTAR NA AGENDA (INDEX.HTML) ==================
 async function listarHospedesAgenda() {
@@ -98,7 +74,7 @@ async function listarHospedesAgenda() {
     agenda.innerHTML = "";
 
     hospedes.forEach(hospede => {
-      // Opcional: só mostra na agenda quem ainda está "hospedado"
+      // Agenda só mostra quem ainda NÃO saiu (status hospedado)
       if (hospede.status.toLowerCase() === 'hospedado') {
         agenda.innerHTML += `
           <li>
@@ -107,10 +83,10 @@ async function listarHospedesAgenda() {
       }
     });
   } catch (error) {
-    console.error("Erro ao buscar hóspedes para agenda:", error);
+    console.error("Erro na agenda:", error);
   }
 }
 
-// Inicialização automática conforme a página
+// Inicialização (não alterada)
 if (document.getElementById("tabela")) listarHospedes();
 if (document.getElementById("agenda")) listarHospedesAgenda();
