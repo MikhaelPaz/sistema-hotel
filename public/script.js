@@ -52,8 +52,9 @@ async function listarHospedes() {
           <td>${hospede.quarto}</td>
           <td>R$ ${hospede.valor_diaria}</td>
           <td>${hospede.status}</td>
-          ${hospede.status === 'ativo' ? `<button onclick="checkout(${hospede.id})">Check-out</button>` : 'Finalizado'}
         </tr>
+        ${hospede.status === 'ativo' ? `<button onclick="checkout(${hospede.id})">Check-out</button>` : 'Finalizado'}
+
       `;
     });
 
