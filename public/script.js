@@ -104,6 +104,9 @@ async function checkout(id) {
         if (document.getElementById("tabela")) listarHospedes();
         if (document.getElementById("agenda")) listarHospedesAgenda();
       }
+
+      if (document.getElementById("ativos")) atualizarContadorAtivos();
+
     } else {
       alert("Erro no servidor: " + (data.message || data));
     }
@@ -135,6 +138,33 @@ async function listarHospedesAgenda() {
     console.error("Erro na agenda:", error);
   }
 }
+
+// ================== ATUALIZAR CONTADOR DE ATIVOS ==================
+async function atualizarContadorAtivos() {
+  const elementoAtivos = document.getElementById("ativos");
+  if (!elementoAtivos) return; // Só executa se estiver na index.html
+
+  try {
+    const response = await fetch(`${API}/hospedes`);
+    const hospedes = await response.json();
+
+    // Filtra apenas quem está com status 'hospedado'
+    const ativos = hospedes.filter(h => h.status.toLowerCase() === 'hospedado');
+
+    // Atualiza o número na tela
+    elementoAtivos.innerText = ativos.length;
+
+  } catch (error) {
+    console.error("Erro ao atualizar contador:", error);
+    elementoAtivos.innerText = "!";
+  }
+}
+
+// Chame a função no final do script para carregar ao abrir a página
+if (document.getElementById("ativos")) {
+  atualizarContadorAtivos();
+}
+
 
 // Inicialização
 if (document.getElementById("tabela")) listarHospedes();
