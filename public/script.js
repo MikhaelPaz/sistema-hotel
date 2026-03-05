@@ -70,22 +70,31 @@ async function listarHospedes() {
 
 // ================== CHECKOUT ==================
 async function checkout(id) {
-  // Confirmação para evitar cliques acidentais
-  if (!confirm("Deseja realmente realizar o check-out?")) return;
+  // 1. Pergunta a quantidade de diárias
+  const quantidade_diarias = prompt("Quantas diárias foram consumidas?");
+
+  // Cancela se o usuário não digitar nada ou cancelar o prompt
+  if (quantidade_diarias === null || quantidade_diarias === "") return;
 
   try {
     const response = await fetch(`${API}/checkout/${id}`, {
-      method: "POST" // Ou "POST", dependendo de como você configurou seu servidor
+      method: "POST", // Alinhado com o seu app.post do servidor
+      headers: {
+        "Content-Type": "application/json"
+      },
+      // 2. Envia a quantidade no corpo da requisição
+      body: JSON.stringify({
+        quantidade_diarias: parseInt(quantidade_diarias)
+      })
     });
 
+    const data = await response.json();
+
     if (response.ok) {
-      const data = await response.json();
-      alert(data.message || "Check-out realizado com sucesso!");
-      
-      // Recarrega a lista para o botão sumir e aparecer "Finalizado"
-      listarHospedes(); 
+      alert(`Check-out realizado!\nTotal a pagar: R$ ${data.total.toFixed(2)}`);
+      listarHospedes();
     } else {
-      alert("Erro ao realizar check-out no servidor.");
+      alert("Erro no servidor: " + data);
     }
 
   } catch (error) {
