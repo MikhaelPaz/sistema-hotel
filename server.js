@@ -78,6 +78,19 @@ app.post("/checkout/:id", (req, res) => {
     });
 });
 
+// Rota para deletar hóspede
+app.delete('/hospedes/:id', (req, res) => {
+    const id = req.params.id;
+    
+    // Se estiver usando um Array simples:
+    hospedes = hospedes.filter(h => h.id != id); 
+    
+    // Se estiver usando MongoDB:
+    // await Hospede.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Hóspede removido com sucesso!" });
+});
+
 // FATURAMENTO MENSAL
 app.get("/faturamento", (req, res) => {
     db.query(

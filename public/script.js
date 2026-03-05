@@ -62,6 +62,7 @@ async function checkout(id) {
   if (quantidade_diarias === null || quantidade_diarias === "") return;
 
   try {
+    // 1. Faz o Checkout no servidor (para calcular o valor e mudar status se necessário)
     const response = await fetch(`${API}/checkout/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -71,23 +72,24 @@ async function checkout(id) {
     const data = await response.json();
 
     if (response.ok) {
-      alert(`Check-out realizado!\nTotal a pagar: R$ ${data.total.toFixed(2)}`);
-      
-      // 1. Apaga do banco
-    await fetch(`${API}/hospedes/${id}`, { method: "DELETE" });
+      alert(`Check-out realizado!\nTotal pago: R$ ${data.total.toFixed(2)}`);
 
-    // 2. Atualiza APENAS o que existe na página atual para evitar erros
-    const tabela = document.getElementById("tabela");
-    const agenda = document.getElementById("agenda");
+      // 2. AGORA APAGA DO BANCO DE DADOS
+      const deleteResponse = await fetch(`${API}/hospedes/${id}`, {
+        method: "DELETE"
+      });
 
-    if (tabela) listarHospedes();       // Recarrega a tabela se ela existir
-    if (agenda) listarHospedesAgenda(); // Recarrega a agenda se ela existir
+      if (deleteResponse.ok) {
+        // 3. Atualiza a interface (Agenda ou Tabela) conforme a página atual
+        if (document.getElementById("tabela")) listarHospedes();
+        if (document.getElementById("agenda")) listarHospedesAgenda();
+      }
     } else {
-      alert("Erro no servidor: " + data.message);
+      alert("Erro ao processar checkout: " + (data.message || data));
     }
   } catch (error) {
-    console.error("Erro no checkout:", error);
-    alert("Erro na comunicação com o servidor.");
+    console.error("Erro na comunicação:", error);
+    alert("Erro ao conectar com o servidor.");
   }
 }
 
