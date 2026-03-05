@@ -70,18 +70,27 @@ async function listarHospedes() {
 
 // ================== CHECKOUT ==================
 async function checkout(id) {
+  // Confirmação para evitar cliques acidentais
+  if (!confirm("Deseja realmente realizar o check-out?")) return;
+
   try {
     const response = await fetch(`${API}/checkout/${id}`, {
-      method: "PUT"
+      method: "PUT" // Ou "POST", dependendo de como você configurou seu servidor
     });
 
-    const data = await response.json();
-    alert(data.message);
-
-    listarHospedes();
+    if (response.ok) {
+      const data = await response.json();
+      alert(data.message || "Check-out realizado com sucesso!");
+      
+      // Recarrega a lista para o botão sumir e aparecer "Finalizado"
+      listarHospedes(); 
+    } else {
+      alert("Erro ao realizar check-out no servidor.");
+    }
 
   } catch (error) {
     console.error("Erro no checkout:", error);
+    alert("Erro na comunicação com o servidor.");
   }
 }
 
