@@ -92,7 +92,7 @@ async function checkout(id) {
 
     if (response.ok) {
       alert(`Check-out realizado!\nTotal a pagar: R$ ${data.total.toFixed(2)}`);
-      listarHospedes();
+      
 
     // Dentro da função checkout(id), após o alert do total:
     if (response.ok) {
@@ -103,6 +103,7 @@ async function checkout(id) {
 
         // Recarrega a lista para sumir o nome
         listarHospedesAgenda();
+        listarHospedes();
 }
     } else {
       alert("Erro no servidor: " + data);
