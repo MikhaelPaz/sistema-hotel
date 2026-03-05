@@ -1,4 +1,3 @@
-// Usa automaticamente o domínio atual (funciona local e online)
 const API = window.location.origin;
 
 // ================== CADASTRAR ==================
@@ -15,39 +14,30 @@ async function cadastrar() {
   try {
     const response = await fetch(`${API}/cadastrar`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        nome,
-        quarto,
-        valor_diaria
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, quarto, valor_diaria })
     });
 
     const data = await response.json();
     alert(data.message);
-
     window.location.href = "index.html";
-
   } catch (error) {
     console.error("Erro ao cadastrar:", error);
     alert("Erro ao cadastrar!");
   }
 }
 
-// ================== LISTAR HÓSPEDES ==================
+// ================== LISTAR NA TABELA (CADASTRO.HTML) ==================
 async function listarHospedes() {
+  const tabela = document.getElementById("tabela");
+  if (!tabela) return; // Sai da função se não estiver na página de cadastro
+
   try {
     const response = await fetch(`${API}/hospedes`);
     const hospedes = await response.json();
-
-    const tabela = document.getElementById("tabela");
     tabela.innerHTML = "";
 
     hospedes.forEach(hospede => {
-      // Verificamos o status e já criamos o HTML do botão ou do texto
-      // Convertemos para minúsculo para evitar erro de "Ativo" vs "ativo"
       const acaoHtml = hospede.status.toLowerCase() === 'hospedado' 
         ? `<button onclick="checkout(${hospede.id || hospede._id})">Check-out</button>` 
         : 'Finalizado';
@@ -59,10 +49,8 @@ async function listarHospedes() {
           <td>R$ ${hospede.valor_diaria}</td>
           <td>${hospede.status}</td>
           <td>${acaoHtml}</td>
-        </tr>
-      `;
+        </tr>`;
     });
-
   } catch (error) {
     console.error("Erro ao buscar hóspedes:", error);
   }
@@ -70,22 +58,14 @@ async function listarHospedes() {
 
 // ================== CHECKOUT ==================
 async function checkout(id) {
-  // 1. Pergunta a quantidade de diárias
   const quantidade_diarias = prompt("Quantas diárias foram consumidas?");
-
-  // Cancela se o usuário não digitar nada ou cancelar o prompt
   if (quantidade_diarias === null || quantidade_diarias === "") return;
 
   try {
     const response = await fetch(`${API}/checkout/${id}`, {
-      method: "POST", // Alinhado com o seu app.post do servidor
-      headers: {
-        "Content-Type": "application/json"
-      },
-      // 2. Envia a quantidade no corpo da requisição
-      body: JSON.stringify({
-        quantidade_diarias: parseInt(quantidade_diarias)
-      })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quantidade_diarias: parseInt(quantidade_diarias) })
     });
 
     const data = await response.json();
@@ -93,56 +73,45 @@ async function checkout(id) {
     if (response.ok) {
       alert(`Check-out realizado!\nTotal a pagar: R$ ${data.total.toFixed(2)}`);
       
+      // Deleta o registro após o checkout
+      await fetch(`${API}/hospedes/${id}`, { method: "DELETE" });
 
-    // Dentro da função checkout(id), após o alert do total:
-    if (response.ok) {
-        alert(`Check-out realizado!\nTotal a pagar: R$ ${data.total.toFixed(2)}`);
-
-        // CHAMADA OPCIONAL PARA DELETAR
-        await fetch(`${API}/hospedes/${id}`, { method: "DELETE" });
-
-        // Recarrega a lista para sumir o nome
-        listarHospedesAgenda();
-        listarHospedes();
-}
+      // Recarrega as listas se elas existirem na página atual
+      if (document.getElementById("tabela")) listarHospedes();
+      if (document.getElementById("agenda")) listarHospedesAgenda();
     } else {
-      alert("Erro no servidor: " + data);
+      alert("Erro no servidor: " + data.message);
     }
-
   } catch (error) {
     console.error("Erro no checkout:", error);
     alert("Erro na comunicação com o servidor.");
   }
 }
 
-// Carrega hóspedes ao abrir página principal
-if (document.getElementById("tabela")) {
-  listarHospedes();
-}
-
-// Colocar hospedes na agenda do index
+// ================== LISTAR NA AGENDA (INDEX.HTML) ==================
 async function listarHospedesAgenda() {
+  const agenda = document.getElementById("agenda");
+  if (!agenda) return;
+
   try {
     const response = await fetch(`${API}/hospedes`);
     const hospedes = await response.json();
-
-    const agenda = document.getElementById("agenda");
     agenda.innerHTML = "";
 
     hospedes.forEach(hospede => {
-      // Criamos a lista simplificada para a agenda
-      agenda.innerHTML += `
-        <li>
-          <strong>${hospede.nome}</strong> - Quarto: ${hospede.quarto} 
-          (${hospede.status})
-        </li>
-      `;
+      // Opcional: só mostra na agenda quem ainda está "hospedado"
+      if (hospede.status.toLowerCase() === 'hospedado') {
+        agenda.innerHTML += `
+          <li>
+            <strong>${hospede.nome}</strong> - Quarto: ${hospede.quarto}
+          </li>`;
+      }
     });
   } catch (error) {
     console.error("Erro ao buscar hóspedes para agenda:", error);
   }
 }
 
-if (document.getElementById("agenda")) {
-  listarHospedesAgenda();
-}
+// Inicialização automática conforme a página
+if (document.getElementById("tabela")) listarHospedes();
+if (document.getElementById("agenda")) listarHospedesAgenda();
