@@ -159,6 +159,37 @@ async function atualizarContadorAtivos() {
   }
 }
 
+// ================== FATURAMENTO ==================
+async function atualizarFaturamento() {
+    const elementoFaturamento = document.getElementById("faturamento");
+    if (!elementoFaturamento) return;
+
+    try {
+        const response = await fetch(`${API}/faturamento`);
+        const data = await response.json();
+        const total = parseFloat(data.total) || 0;
+        elementoFaturamento.innerText = `R$ ${total.toFixed(2).replace(".", ",")}`;
+    } catch (error) {
+        console.error("Erro ao buscar faturamento:", error);
+        elementoFaturamento.innerText = "Erro";
+    }
+}
+
+async function limparFaturamento() {
+    if (!confirm("Tem certeza que deseja limpar o faturamento do mês?")) return;
+
+    try {
+        const response = await fetch(`${API}/faturamento`, { method: "DELETE" });
+        const data = await response.json();
+        alert(data.message);
+        atualizarFaturamento();
+    } catch (error) {
+        console.error("Erro ao limpar faturamento:", error);
+        alert("Erro ao conectar com o servidor.");
+    }
+}
+
+
 // Chame a função no final do script para carregar ao abrir a página
 if (document.getElementById("ativos")) {
   atualizarContadorAtivos();
@@ -168,3 +199,4 @@ if (document.getElementById("ativos")) {
 // Inicialização
 if (document.getElementById("tabela")) listarHospedes();
 if (document.getElementById("agenda")) listarHospedesAgenda();
+if (document.getElementById("faturamento")) atualizarFaturamento();

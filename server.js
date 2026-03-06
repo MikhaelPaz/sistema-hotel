@@ -56,46 +56,55 @@ app.get("/hospedes", (req, res) => {
     });
 });
 
-// CHECKOUT (CORRIGIDO PARA MYSQL)
+// CHECKOUT — agora salva no histórico de faturamento
 app.post('/checkout/:id', (req, res) => {
     const id = req.params.id;
     const { quantidade_diarias } = req.body;
 
-    // 1. Busca o hóspede para pegar o valor da diária
-    db.query("SELECT valor_diaria FROM hospedagens WHERE id = ?", [id], (err, results) => {
+    db.query("SELECT * FROM hospedagens WHERE id = ?", [id], (err, results) => {
         if (err) return res.status(500).json({ message: "Erro ao buscar hóspede" });
         if (results.length === 0) return res.status(404).json({ message: "Hóspede não encontrado" });
 
-        const valor_diaria = results[0].valor_diaria;
+        const { nome, quarto, valor_diaria } = results[0];
         const total = valor_diaria * quantidade_diarias;
 
-        // 2. Deleta o hóspede (Como você pediu para apagar do banco ao finalizar)
-        db.query("DELETE FROM hospedagens WHERE id = ?", [id], (errDelete) => {
-            if (errDelete) return res.status(500).json({ message: "Erro ao deletar" });
-            
-            res.json({ 
-                total: total, 
-                message: "Checkout realizado e registro removido." 
-            });
-        });
+        // Salva no histórico ANTES de deletar
+        db.query(
+            "INSERT INTO faturamento (nome, quarto, total) VALUES (?, ?, ?)",
+            [nome, quarto, total],
+            (errInsert) => {
+                if (errInsert) return res.status(500).json({ message: "Erro ao salvar faturamento" });
+
+                db.query("DELETE FROM hospedagens WHERE id = ?", [id], (errDelete) => {
+                    if (errDelete) return res.status(500).json({ message: "Erro ao deletar" });
+
+                    res.json({ total, message: "Checkout realizado e faturamento salvo." });
+                });
+            }
+        );
     });
 });
 
-// ROTA DELETE AVULSA (CORRIGIDA)
-app.delete('/hospedes/:id', (req, res) => {
-    const id = req.params.id;
-    db.query("DELETE FROM hospedagens WHERE id = ?", [id], (err) => {
-        if (err) return res.status(500).send(err);
-        res.json({ message: "Hóspede removido com sucesso!" });
-    });
-});
-
-// FATURAMENTO E PORTA (MANTIDOS)
+// BUSCAR FATURAMENTO MENSAL
 app.get("/faturamento", (req, res) => {
-    db.query("SELECT SUM(valor_diaria) as total FROM hospedagens", (err, result) => {
-        if (err) return res.status(500).send(err);
-        res.json({ total: result[0].total || 0 });
-    });
+    db.query(
+        "SELECT SUM(total) as total FROM faturamento WHERE MONTH(data_checkout) = MONTH(NOW()) AND YEAR(data_checkout) = YEAR(NOW())",
+        (err, result) => {
+            if (err) return res.status(500).send(err);
+            res.json({ total: result[0].total || 0 });
+        }
+    );
+});
+
+// LIMPAR FATURAMENTO MENSAL
+app.delete("/faturamento", (req, res) => {
+    db.query(
+        "DELETE FROM faturamento WHERE MONTH(data_checkout) = MONTH(NOW()) AND YEAR(data_checkout) = YEAR(NOW())",
+        (err) => {
+            if (err) return res.status(500).send(err);
+            res.json({ message: "Faturamento limpo com sucesso!" });
+        }
+    );
 });
 
 const PORT = process.env.PORT || 3000;
