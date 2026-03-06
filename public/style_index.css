@@ -1,3 +1,4 @@
+/* CSS RESET */
 * {
     margin: 0;
     padding: 0;
@@ -19,12 +20,18 @@ body {
     margin: auto;
 }
 
-/* Título */
+/* Títulos */
 h1 {
     text-align: center;
     margin-bottom: 30px;
     color: white;
     font-size: 32px;
+}
+
+h2 {
+    margin-top: 50px;
+    margin-bottom: 15px;
+    color: #2a5298;
 }
 
 /* Cards */
@@ -39,12 +46,6 @@ h1 {
 
 .card:hover {
     transform: translateY(-5px);
-}
-
-/* Título do card */
-.card h2 {
-    margin-bottom: 15px;
-    color: #2a5298;
 }
 
 /* Valores */
@@ -128,7 +129,3 @@ button.danger:hover {
     color: rgb(82, 80, 80);
 }
 
-#lista{
-    width: 70%;
-    margin-left: 15%;
-}

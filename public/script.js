@@ -1,103 +1,170 @@
-const API = "http://localhost:3000";
+const API = window.location.origin;
 
-// DASHBOARD
-if (document.getElementById("ativos")) {
 
-    fetch(API + "/hospedes")
-        .then(res => res.json())
-        .then(data => {
-            const ativos = data.filter(h => h.status === "hospedado");
-            document.getElementById("ativos").innerText = ativos.length;
+// ================== CADASTRAR (ADICIONE ESTE BLOCO) ==================
+async function cadastrar() {
+  const nome = document.getElementById("nome").value;
+  const quarto = document.getElementById("quarto").value;
+  const valor_diaria = document.getElementById("valor_diaria").value;
 
-            const agenda = document.getElementById("agenda");
-            agenda.innerHTML = "";
+  // Validação simples para não enviar campos vazios
+  if (!nome || !quarto || !valor_diaria) {
+    alert("Por favor, preencha todos os campos!");
+    return;
+  }
 
-            ativos.forEach(h => {
-                agenda.innerHTML += `<li>Quarto ${h.quarto} - ${h.nome}</li>`;
-            });
-        });
+  try {
+    const response = await fetch(`${API}/cadastrar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        nome: nome, 
+        quarto: quarto, 
+        valor_diaria: valor_diaria 
+      })
+    });
 
-    fetch(API + "/faturamento")
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("faturamento").innerText =
-                "R$ " + Number(data.total).toFixed(2);
-        });
-}
+    const data = await response.json();
 
-// CADASTRO
-function cadastrar() {
-    const nome = document.getElementById("nome").value;
-    const quarto = document.getElementById("quarto").value;
-    const valor = document.getElementById("valor").value;
-
-    fetch(API + "/cadastrar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            nome,
-            quarto,
-            valor_diaria: valor
-        })
-    }).then(() => location.reload());
-}
-
-// LISTAR NA PÁGINA CADASTRO
-if (document.getElementById("lista")) {
-
-    fetch(API + "/hospedes")
-        .then(res => res.json())
-        .then(data => {
-
-            const lista = document.getElementById("lista");
-            lista.innerHTML = "";
-
-            // 🔹 Mostrar apenas hóspedes ativos
-            const ativos = data.filter(h => h.status === "hospedado");
-
-            ativos.forEach(h => {
-                lista.innerHTML += `
-                <li>
-                    ${h.nome} - Quarto ${h.quarto}
-                    <button onclick="checkout(${h.id})">Check-out</button>
-                </li>`;
-            });
-        });
-}
-
-function checkout(id) {
-    const diarias = prompt("Quantidade de diárias:");
-
-    if (!diarias || diarias <= 0) {
-        alert("Quantidade inválida!");
-        return;
+    if (response.ok) {
+      alert(data.message);
+      // Limpa os campos após cadastrar
+      document.getElementById("nome").value = "";
+      document.getElementById("quarto").value = "";
+      document.getElementById("valor_diaria").value = "";
+      
+      // Atualiza a tabela na mesma página
+      listarHospedes(); 
+    } else {
+      alert("Erro ao cadastrar: " + data.message);
     }
-
-    fetch(API + "/checkout/" + id, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            quantidade_diarias: diarias
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert("Valor total a pagar: R$ " + Number(data.total).toFixed(2));
-        location.reload();
-    });
+  } catch (error) {
+    console.error("Erro na requisição de cadastro:", error);
+    alert("Erro ao conectar com o servidor.");
+  }
 }
-// limpar faturamento mensal
-function limparFaturamento() {
 
-    const confirmar = confirm("Tem certeza que deseja zerar o faturamento mensal?");
 
-    if (!confirmar) return;
+// ================== LISTAR NA TABELA (CADASTRO.HTML) ==================
+async function listarHospedes() {
+  const tabela = document.getElementById("tabela");
+  if (!tabela) return;
 
-    fetch(API + "/limpar-faturamento", {
-        method: "POST"
-    })
-    .then(() => {
-        alert("Faturamento mensal zerado com sucesso!");
-        location.reload();
+  try {
+    const response = await fetch(`${API}/hospedes`);
+    const hospedes = await response.json();
+    tabela.innerHTML = "";
+
+    hospedes.forEach(hospede => {
+      const idReal = hospede._id || hospede.id;
+      
+      const acaoHtml = hospede.status.toLowerCase() === 'hospedado' 
+        ? `<button onclick="checkout('${idReal}')">Check-out</button>` 
+        : 'Finalizado';
+
+      tabela.innerHTML += `
+        <tr>
+          <td>${hospede.nome}</td>
+          <td>${hospede.quarto}</td>
+          <td>R$ ${hospede.valor_diaria}</td>
+          <td>${hospede.status}</td>
+          <td>${acaoHtml}</td>
+        </tr>`;
     });
+  } catch (error) {
+    console.error("Erro ao buscar hóspedes:", error);
+  }
 }
+
+// ================== CHECKOUT ==================
+async function checkout(id) {
+  const quantidade_diarias = prompt("Quantas diárias foram consumidas?");
+  if (quantidade_diarias === null || quantidade_diarias === "") return;
+
+  try {
+    // 1. Faz o Checkout no servidor
+    const response = await fetch(`${API}/checkout/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quantidade_diarias: parseInt(quantidade_diarias) })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert(`Check-out realizado!\nTotal pago: R$ ${data.total.toFixed(2)}`);
+
+      // 2. Chama a exclusão após o checkout (Se o seu servidor já não deleta no POST)
+      const deleteResponse = await fetch(`${API}/hospedes/${id}`, {
+        method: "DELETE"
+      });
+
+      if (deleteResponse.ok) {
+        // 3. Atualiza a interface
+        if (document.getElementById("tabela")) listarHospedes();
+        if (document.getElementById("agenda")) listarHospedesAgenda();
+      }
+
+      if (document.getElementById("ativos")) atualizarContadorAtivos();
+    } else {
+      alert("Erro no servidor: " + (data.message || data));
+    }
+  } catch (error) {
+    console.error("Erro na comunicação:", error);
+    alert("Erro ao conectar com o servidor.");
+  }
+}
+
+// ================== LISTAR NA AGENDA (INDEX.HTML) ==================
+async function listarHospedesAgenda() {
+  const agenda = document.getElementById("agenda");
+  if (!agenda) return;
+
+  try {
+    const response = await fetch(`${API}/hospedes`);
+    const hospedes = await response.json();
+    agenda.innerHTML = "";
+
+    hospedes.forEach(hospede => {
+      if (hospede.status.toLowerCase() === 'hospedado') {
+        agenda.innerHTML += `
+          <li>
+            <strong>${hospede.nome}</strong> - Quarto: ${hospede.quarto}
+          </li>`;
+      }
+    });
+  } catch (error) {
+    console.error("Erro na agenda:", error);
+  }
+}
+
+// ================== ATUALIZAR CONTADOR DE ATIVOS ==================
+async function atualizarContadorAtivos() {
+  const elementoAtivos = document.getElementById("ativos");
+  if (!elementoAtivos) return; // Só executa se estiver na index.html
+
+  try {
+    const response = await fetch(`${API}/hospedes`);
+    const hospedes = await response.json();
+
+    // Filtra apenas quem está com status 'hospedado'
+    const ativos = hospedes.filter(h => h.status.toLowerCase() === 'hospedado');
+
+    // Atualiza o número na tela
+    elementoAtivos.innerText = ativos.length;
+
+  } catch (error) {
+    console.error("Erro ao atualizar contador:", error);
+    elementoAtivos.innerText = "!";
+  }
+}
+
+// Chame a função no final do script para carregar ao abrir a página
+if (document.getElementById("ativos")) {
+  atualizarContadorAtivos();
+}
+
+
+// Inicialização
+if (document.getElementById("tabela")) listarHospedes();
+if (document.getElementById("agenda")) listarHospedesAgenda();
