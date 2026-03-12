@@ -259,6 +259,20 @@ body.dark {
     .counter, .revenue-value { font-size: 28px; }
 }
 
+@media (min-width: 769px) {
+    .dashboard-grid {
+        display: grid;
+        
+        gap: 20px;
+    }
+
+    #estatistica {
+        grid-column: 1 / -1; /* Força o card a ocupar a linha toda */
+        width: 100%;         /* Garante que preencha o espaço */
+        margin-top: 20px;    /* Da uma distancia dos cards a cima */
+    }
+}
+
 @media (max-width: 480px) {
     .card { padding: 20px; }
     .card-header i { font-size: 24px; }
@@ -396,4 +410,3 @@ button.danger:hover {
     font-weight: bold;
     color: rgb(82, 80, 80);
 }
-
