@@ -1,17 +1,285 @@
-/* CSS RESET */
+/* CSS RESET - ORIGINAL */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* BLACKBOXAI NEW - READ ONLY */
+
+/* CSS Variables */
+:root {
+    --bg-primary: linear-gradient(135deg, #1e3c72, #2a5298);
+    --bg-secondary: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --card-glass: rgba(255, 255, 255, 0.25);
+    --text-primary: #333;
+    --text-secondary: #1e3c72;
+    --accent: #2a5298;
+    --danger: #c0392b;
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.dark {
+    --bg-primary: linear-gradient(135deg, #0c0c0c, #1a1a1a);
+    --bg-secondary: linear-gradient(135deg, #000, #111);
+    --card-bg: rgba(30, 30, 30, 0.95);
+    --card-glass: rgba(255, 255, 255, 0.1);
+    --text-primary: #f0f0f0;
+    --text-secondary: #4a90e2;
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* /END BLACKBOXAI NEW */
+
+/* ORIGINAL body styles preserved */
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    background: var(--bg-primary);
     min-height: 100vh;
     padding: 40px;
-    color: #333;
+    color: var(--text-primary);
+    transition: background 0.3s ease, color 0.3s ease;
 }
+
+/* BLACKBOXAI NEW - READ ONLY */
+body.dark {
+    background: var(--bg-secondary);
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+    animation: fadeIn 1s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header controls */
+.header-controls {
+    margin-bottom: 20px;
+}
+
+.dark-toggle {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.dark-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-hover);
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* Enhanced Cards */
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--card-glass);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), #4a90e2);
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.card-header i {
+    font-size: 28px;
+    color: var(--accent);
+}
+
+.counter, .revenue-value {
+    font-size: 36px;
+    font-weight: bold;
+    color: var(--text-secondary);
+    margin: 10px 0;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.agenda-list {
+    max-height: 200px;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.agenda-list li {
+    background: var(--card-glass);
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.agenda-list li:hover {
+    background: var(--accent);
+    color: white;
+    transform: translateX(5px);
+}
+
+.btn-danger {
+    background: var(--danger) !important;
+    padding: 10px 20px;
+    font-size: 14px;
+    margin-top: 15px;
+}
+
+.btn-danger:hover {
+    background: #922b21 !important;
+}
+
+/* Charts */
+.charts canvas {
+    max-height: 200px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: var(--card-bg);
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: var(--shadow-hover);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from { transform: scale(0.8) translateY(-50px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+.close:hover {
+    color: var(--danger);
+}
+
+/* Cadastro Link */
+.cadastro-link {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 15px 30px;
+    background: var(--accent);
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.cadastro-link:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body { padding: 20px; }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .counter, .revenue-value { font-size: 28px; }
+}
+
+@media (max-width: 480px) {
+    .card { padding: 20px; }
+    .card-header i { font-size: 24px; }
+}
+
+/* Loading Spinner */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: var(--accent);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* /END BLACKBOXAI NEW */
 
 /* Container central */
 .container {
