@@ -1,36 +1,76 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <!-- BLACKBOXAI NEW - READ ONLY -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Hotel</title>
+    <title>Dashboard Hotel - Modernizado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style_index.css">
+    <!-- /END BLACKBOXAI NEW -->
 </head>
 
 <body>
-<div class="container1">
+<div class="container">
+    <!-- BLACKBOXAI ORIGINAL CODE - PRESERVED -->
     <h1>Dashboard do Hotel</h1>
+    <!-- /END ORIGINAL -->
 
-    <div class="card">
-        <h2>Hóspedes Ativos</h2>
-        <p id="ativos">0</p>
+    <!-- BLACKBOXAI NEW - READ ONLY -->
+    <div class="header-controls">
+        <button id="dark-toggle" class="dark-toggle">🌙 Dark Mode</button>
     </div>
 
-    <div class="card">
-        <h2>Faturamento Mensal</h2>
-        <p id="faturamento">R$ 0,00</p>
-        <button onclick="limparFaturamento()">Limpar Faturamento</button>
+    <div class="dashboard-grid">
+        <!-- Cards will be restructured here -->
+        <div class="card active-guests">
+            <div class="card-header">
+                <i class="fas fa-users"></i>
+                <h2>Hóspedes Ativos</h2>
+            </div>
+            <p id="ativos" class="counter">0</p>
+        </div>
+
+        <div class="card revenue">
+            <div class="card-header">
+                <i class="fas fa-dollar-sign"></i>
+                <h2>Faturamento Mensal</h2>
+            </div>
+            <p id="faturamento" class="revenue-value">R$ 0,00</p>
+            <button class="btn-danger" onclick="limparFaturamento()">Limpar Faturamento</button>
+        </div>
+
+        <div class="card agenda-card">
+            <div class="card-header">
+                <i class="fas fa-calendar"></i>
+                <h2>Agenda</h2>
+            </div>
+            <ul id="agenda" class="agenda-list"></ul>
+        </div>
+
+        <div class="card charts">
+            <div class="card-header">
+                <i class="fas fa-chart-pie"></i>
+                <h2>Estatísticas</h2>
+            </div>
+            <canvas id="guestChart" width="400" height="200"></canvas>
+            <canvas id="revenueChart" width="400" height="200" style="margin-top: 20px;"></canvas>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>Agenda</h2>
-        <ul id="agenda"></ul>
-   
+    <a href="cadastro.html" class="cadastro-link">Ir para Cadastro</a>
+
+    <!-- Modal for guest details -->
+    <div id="guestModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-body"></div>
+        </div>
     </div>
+    <!-- /END BLACKBOXAI NEW -->
 
-    <a href="cadastro.html">Ir para Cadastro</a>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
-</div>    
+</div>
 </body>
 </html>
